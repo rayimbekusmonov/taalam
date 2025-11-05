@@ -1,4 +1,4 @@
-name: taalam
+name: arab_lugat
 description: Arab tili lug'atlarini o'rgatuvchi Flutter ilova
 publish_to: 'none'
 version: 1.0.0+1
@@ -13,10 +13,9 @@ dependencies:
   # State Management
   provider: ^6.1.1
 
-  # Firebase
+  # Firebase (Storage ni hozircha o'chirish)
   firebase_core: ^2.24.2
   cloud_firestore: ^4.13.6
-  firebase_storage: ^11.5.6
   firebase_analytics: ^10.7.4
 
   # Local Storage
@@ -47,8 +46,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Assets
-  assets:
-    - assets/images/
-    - assets/audio/
-    - assets/icons/
+  # Assets uchun folder yaratilganda qo'shamiz
+  # assets:
+  #   - assets/images/
+  #   - assets/audio/

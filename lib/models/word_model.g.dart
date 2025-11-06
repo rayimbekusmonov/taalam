@@ -21,15 +21,22 @@ class WordAdapter extends TypeAdapter<Word> {
       categoryId: fields[1] as String,
       arabic: fields[2] as String,
       transliteration: fields[3] as String,
-      uzbek: fields[4] as String,
-      audioUrl: fields[5] as String,
+      meaningUz: fields[4] as String,
+      meaningEn: fields[5] as String,
+      audioUrl: fields[6] as String?,
+      imageUrl: fields[7] as String?,
+      emoji: fields[8] as String?,
+      difficulty: fields[9] as String,
+      lastUpdated: fields[10] as DateTime,
+      isFavorite: fields[11] as bool,
+      isLearned: fields[12] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Word obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -39,9 +46,23 @@ class WordAdapter extends TypeAdapter<Word> {
       ..writeByte(3)
       ..write(obj.transliteration)
       ..writeByte(4)
-      ..write(obj.uzbek)
+      ..write(obj.meaningUz)
       ..writeByte(5)
-      ..write(obj.audioUrl);
+      ..write(obj.meaningEn)
+      ..writeByte(6)
+      ..write(obj.audioUrl)
+      ..writeByte(7)
+      ..write(obj.imageUrl)
+      ..writeByte(8)
+      ..write(obj.emoji)
+      ..writeByte(9)
+      ..write(obj.difficulty)
+      ..writeByte(10)
+      ..write(obj.lastUpdated)
+      ..writeByte(11)
+      ..write(obj.isFavorite)
+      ..writeByte(12)
+      ..write(obj.isLearned);
   }
 
   @override
@@ -50,7 +71,7 @@ class WordAdapter extends TypeAdapter<Word> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is WordAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+          other is WordAdapter &&
+              runtimeType == other.runtimeType &&
+              typeId == other.typeId;
 }

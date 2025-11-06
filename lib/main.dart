@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 // Models
 import 'models/category_model.dart';
 import 'models/word_model.dart';
 import 'models/user_progress_model.dart';
+
+// Providers
+import 'providers/category_provider.dart';
+// import 'providers/word_provider.dart';
 
 // Core
 import 'core/theme/app_theme.dart';
@@ -39,11 +43,17 @@ class ArabLugatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Taalam',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const HomeScreen(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        // ChangeNotifierProvider(create: (_) => WordProvider()),
+      ],
+      child: MaterialApp(
+        title: 'ArabLug\'at',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: const HomeScreen(),
+      ),
     );
   }
 }

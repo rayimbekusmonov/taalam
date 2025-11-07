@@ -9,7 +9,7 @@ import 'models/user_progress_model.dart';
 
 // Providers
 import 'providers/category_provider.dart';
-// import 'providers/word_provider.dart';
+import 'providers/word_provider.dart';
 
 // Core
 import 'core/theme/app_theme.dart';
@@ -46,7 +46,7 @@ class ArabLugatApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        // ChangeNotifierProvider(create: (_) => WordProvider()),
+        ChangeNotifierProvider(create: (_) => WordProvider()),
       ],
       child: MaterialApp(
         title: 'ArabLug\'at',

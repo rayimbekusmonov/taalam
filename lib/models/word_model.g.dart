@@ -21,8 +21,8 @@ class WordAdapter extends TypeAdapter<Word> {
       categoryId: fields[1] as String,
       arabic: fields[2] as String,
       transliteration: fields[3] as String,
-      meaningUz: fields[4] as String,
-      meaningEn: fields[5] as String,
+      uzbek: fields[4] as String,
+      english: fields[5] as String,
       audioUrl: fields[6] as String?,
       imageUrl: fields[7] as String?,
       emoji: fields[8] as String?,
@@ -46,9 +46,9 @@ class WordAdapter extends TypeAdapter<Word> {
       ..writeByte(3)
       ..write(obj.transliteration)
       ..writeByte(4)
-      ..write(obj.meaningUz)
+      ..write(obj.uzbek)
       ..writeByte(5)
-      ..write(obj.meaningEn)
+      ..write(obj.english)
       ..writeByte(6)
       ..write(obj.audioUrl)
       ..writeByte(7)
@@ -71,7 +71,7 @@ class WordAdapter extends TypeAdapter<Word> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is WordAdapter &&
-              runtimeType == other.runtimeType &&
-              typeId == other.typeId;
+      other is WordAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

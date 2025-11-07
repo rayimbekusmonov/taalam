@@ -17,19 +17,19 @@ class Word {
   final String transliteration;
 
   @HiveField(4)
-  final String meaningUz;
+  final String uzbek;
 
   @HiveField(5)
-  final String meaningEn;
+  final String english;
 
   @HiveField(6)
-  final String? audioUrl; // Optional qilamiz
+  final String? audioUrl;
 
   @HiveField(7)
-  final String? imageUrl; // Optional qilamiz
+  final String? imageUrl;
 
   @HiveField(8)
-  final String? emoji; // Emoji uchun alohida field
+  final String? emoji;
 
   @HiveField(9)
   final String difficulty;
@@ -48,8 +48,8 @@ class Word {
     required this.categoryId,
     required this.arabic,
     required this.transliteration,
-    required this.meaningUz,
-    required this.meaningEn,
+    required this.uzbek,
+    required this.english,
     this.audioUrl,
     this.imageUrl,
     this.emoji,
@@ -59,57 +59,13 @@ class Word {
     this.isLearned = false,
   });
 
-  // Firestore'dan JSON convert
-  factory Word.fromJson(Map<String, dynamic> json) {
-    return Word(
-      id: json['id'] ?? '',
-      categoryId: json['category_id'] ?? '',
-      arabic: json['arabic'] ?? '',
-      transliteration: json['transliteration'] ?? '',
-      meaningUz: json['meaning_uz'] ?? '',
-      meaningEn: json['meaning_en'] ?? '',
-      audioUrl: json['audio_url'],
-      imageUrl: json['image_url'],
-      emoji: json['emoji'],
-      difficulty: json['difficulty'] ?? 'easy',
-      lastUpdated: json['lastUpdated'] != null
-          ? DateTime.parse(json['lastUpdated'])
-          : DateTime.now(),
-      isFavorite: json['isFavorite'] ?? false,
-      isLearned: json['isLearned'] ?? false,
-    );
-  }
-
-  // Firestore'ga JSON convert
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'category_id': categoryId,
-      'arabic': arabic,
-      'transliteration': transliteration,
-      'meaning_uz': meaningUz,
-      'meaning_en': meaningEn,
-      'audio_url': audioUrl,
-      'image_url': imageUrl,
-      'emoji': emoji,
-      'difficulty': difficulty,
-      'lastUpdated': lastUpdated.toIso8601String(),
-    };
-  }
-
-  // Firestore Document snapshot'dan yaratish
-  factory Word.fromFirestore(Map<String, dynamic> data) {
-    return Word.fromJson(data);
-  }
-
-  // Copy with method
   Word copyWith({
     String? id,
     String? categoryId,
     String? arabic,
     String? transliteration,
-    String? meaningUz,
-    String? meaningEn,
+    String? uzbek,
+    String? english,
     String? audioUrl,
     String? imageUrl,
     String? emoji,
@@ -123,8 +79,8 @@ class Word {
       categoryId: categoryId ?? this.categoryId,
       arabic: arabic ?? this.arabic,
       transliteration: transliteration ?? this.transliteration,
-      meaningUz: meaningUz ?? this.meaningUz,
-      meaningEn: meaningEn ?? this.meaningEn,
+      uzbek: uzbek ?? this.uzbek,
+      english: english ?? this.english,
       audioUrl: audioUrl ?? this.audioUrl,
       imageUrl: imageUrl ?? this.imageUrl,
       emoji: emoji ?? this.emoji,
@@ -137,7 +93,7 @@ class Word {
 
   @override
   String toString() {
-    return 'Word(id: $id, arabic: $arabic, meaningUz: $meaningUz)';
+    return 'Word(id: $id, arabic: $arabic, uzbek: $uzbek)';
   }
 
   @override

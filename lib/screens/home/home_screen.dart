@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../providers/category_provider.dart';
+import '../../providers/word_provider.dart';
+import '../../models/category_model.dart';
+import '../category/category_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,6 +17,16 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Ma'lumotlarni yuklash
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CategoryProvider>().loadCategories();
+      context.read<WordProvider>().loadAllWords();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -20,13 +35,16 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // Search funksiyasi
+              // Search funksiyasi (keyinroq)
             },
           ),
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+            icon: const Icon(Icons.refresh),
             onPressed: () {
-              // Bildirishnomalar
+              final categoryProvider = context.read<CategoryProvider>();
+              final wordProvider = context.read<WordProvider>();
+              categoryProvider.refresh();
+              wordProvider.refresh();
             },
           ),
         ],
@@ -52,128 +70,234 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoriesTab() {
-    // Demo kategoriyalar
-    final demoCategories = [
-      {'icon': '🍎', 'nameUz': 'Mevalar', 'nameAr': 'الفواكه', 'count': 24},
-      {'icon': '🥕', 'nameUz': 'Sabzavotlar', 'nameAr': 'الخضروات', 'count': 18},
-      {'icon': '🦁', 'nameUz': 'Hayvonlar', 'nameAr': 'الحيوانات', 'count': 32},
-      {'icon': '👕', 'nameUz': 'Kiyimlar', 'nameAr': 'الملابس', 'count': 20},
-      {'icon': '🏠', 'nameUz': 'Uy-joy', 'nameAr': 'المنزل', 'count': 28},
-      {'icon': '🚗', 'nameUz': 'Transport', 'nameAr': 'المواصلات', 'count': 16},
-    ];
+    return Consumer2<CategoryProvider, WordProvider>(
+      builder: (context, categoryProvider, wordProvider, child) {
+        if (categoryProvider.isLoading || wordProvider.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header qismi
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-            ),
+        if (categoryProvider.error != null) {
+          return Center(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Assalomu alaykum!',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Bugun qaysi so\'zlarni o\'rganamiz?',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withOpacity(0.9),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Progress card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatItem('42', 'O\'rganilgan', Icons.book),
-                      Container(
-                        width: 1,
-                        height: 40,
-                        color: Colors.white.withOpacity(0.3),
-                      ),
-                      _buildStatItem('138', 'Jami so\'zlar', Icons.library_books),
-                      Container(
-                        width: 1,
-                        height: 40,
-                        color: Colors.white.withOpacity(0.3),
-                      ),
-                      _buildStatItem('7', 'Kun ketma-ket', Icons.local_fire_department),
-                    ],
-                  ),
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(categoryProvider.error!),
+                ElevatedButton(
+                  onPressed: () => categoryProvider.refresh(),
+                  child: const Text('Qayta urinish'),
                 ),
               ],
             ),
-          ),
+          );
+        }
 
-          const SizedBox(height: 20),
+        final categories = categoryProvider.categories;
+        final totalWords = wordProvider.totalWordsCount;
+        final learnedWords = wordProvider.learnedWordsCount;
+        final favoriteWords = wordProvider.favoriteWordsCount;
 
-          // Kategoriyalar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Kategoriyalar',
-              style: Theme.of(context).textTheme.headlineMedium,
+        return RefreshIndicator(
+          onRefresh: () async {
+            final categoryProvider = context.read<CategoryProvider>();
+            final wordProvider = context.read<WordProvider>();
+            categoryProvider.refresh();
+            wordProvider.refresh();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header qismi
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Assalomu alaykum! 👋',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Bugun qaysi so\'zlarni o\'rganamiz?',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withAlpha(230),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Progress card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(51),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildStatItem(
+                              '$learnedWords',
+                              'O\'rganilgan',
+                              Icons.check_circle_outline,
+                            ),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.white.withAlpha(77),
+                            ),
+                            _buildStatItem(
+                              '$totalWords',
+                              'Jami so\'zlar',
+                              Icons.library_books,
+                            ),
+                            Container(
+                              width: 1,
+                              height: 40,
+                              color: Colors.white.withAlpha(77),
+                            ),
+                            _buildStatItem(
+                              '$favoriteWords',
+                              'Sevimli',
+                              Icons.favorite,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Progress bar
+                      const SizedBox(height: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'O\'rganish jarayoni',
+                                style: TextStyle(
+                                  color: Colors.white.withAlpha(230),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                '${wordProvider.learningProgress.toStringAsFixed(0)}%',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LinearProgressIndicator(
+                              value: wordProvider.learningProgress / 100,
+                              minHeight: 8,
+                              backgroundColor: Colors.white.withAlpha(77),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Kategoriyalar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Kategoriyalar',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      Text(
+                        '${categories.length} ta',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Kategoriyalar grid
+                categories.isEmpty
+                    ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Text('Hozircha kategoriya yo\'q'),
+                  ),
+                )
+                    : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 1.1,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      final color = AppColors.categoryColors[
+                      index % AppColors.categoryColors.length];
+
+                      // Kategoriya bo'yicha so'zlar sonini hisoblash
+                      final categoryWordsCount = wordProvider.allWords
+                          .where((w) => w.categoryId == category.id)
+                          .length;
+
+                      return _buildCategoryCard(
+                        category: category,
+                        wordsCount: categoryWordsCount,
+                        color: color,
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+              ],
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          // Kategoriyalar grid
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 1.1,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: demoCategories.length,
-              itemBuilder: (context, index) {
-                final category = demoCategories[index];
-                final color = AppColors.categoryColors[index % AppColors.categoryColors.length];
-
-                return _buildCategoryCard(
-                  icon: category['icon'] as String,
-                  nameUz: category['nameUz'] as String,
-                  nameAr: category['nameAr'] as String,
-                  count: category['count'] as int,
-                  color: color,
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 20),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildStatItem(String value, String label, IconData icon) {
     return Column(
       children: [
-        Icon(icon, color: Colors.white, size: 28),
+        Icon(icon, color: Colors.white, size: 24),
         const SizedBox(height: 8),
         Text(
           value,
@@ -186,8 +310,8 @@ class _HomeScreenState extends State<HomeScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
-            fontSize: 12,
+            color: Colors.white.withAlpha(230),
+            fontSize: 11,
           ),
         ),
       ],
@@ -195,25 +319,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoryCard({
-    required String icon,
-    required String nameUz,
-    required String nameAr,
-    required int count,
+    required Category category,
+    required int wordsCount,
     required Color color,
   }) {
     return GestureDetector(
       onTap: () {
-        // Kategoriya sahifasiga o'tish
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$nameUz tanlandi')),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryScreen(category: category),
+          ),
         );
       },
       child: Container(
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withAlpha(26),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withAlpha(77),
             width: 1,
           ),
         ),
@@ -223,34 +347,38 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                icon,
+                category.icon,
                 style: const TextStyle(fontSize: 48),
               ),
               const SizedBox(height: 8),
               Text(
-                nameUz,
+                category.nameUz,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: color.withOpacity(0.8),
+                  color: color.withAlpha(204),
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
-                nameAr,
+                category.nameAr,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withAlpha(51),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '$count so\'z',
+                  '$wordsCount so\'z',
                   style: TextStyle(
                     color: color,
                     fontSize: 12,
@@ -266,20 +394,236 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFavoritesTab() {
-    return const Center(
-      child: Text('Sevimlilar bo\'limi'),
+    return Consumer<WordProvider>(
+      builder: (context, wordProvider, child) {
+        final favorites = wordProvider.favoriteWords;
+
+        if (wordProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (favorites.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.favorite_border,
+                  size: 80,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Sevimli so\'zlar yo\'q',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'So\'zlarni sevimliga qo\'shing',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: favorites.length,
+          itemBuilder: (context, index) {
+            final word = favorites[index];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListTile(
+                leading: Text(
+                  word.emoji ?? '📝',
+                  style: const TextStyle(fontSize: 32),
+                ),
+                title: Text(
+                  word.arabic,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Text(word.uzbek),
+                trailing: IconButton(
+                  icon: const Icon(Icons.favorite, color: Colors.red),
+                  onPressed: () {
+                    wordProvider.toggleFavorite(word.id);
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
   Widget _buildQuizTab() {
-    return const Center(
-      child: Text('Test bo\'limi'),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.quiz_outlined,
+            size: 80,
+            color: AppColors.primary.withAlpha(128),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Test bo\'limi',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tez orada qo\'shiladi',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildProfileTab() {
-    return const Center(
-      child: Text('Profil bo\'limi'),
+    return Consumer<WordProvider>(
+      builder: (context, wordProvider, child) {
+        return ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            // Profile header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person,
+                      size: 50,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Foydalanuvchi',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Statistika
+            _buildStatCard(
+              'O\'rganilgan so\'zlar',
+              '${wordProvider.learnedWordsCount}',
+              Icons.check_circle,
+              AppColors.success,
+            ),
+            const SizedBox(height: 12),
+            _buildStatCard(
+              'Sevimli so\'zlar',
+              '${wordProvider.favoriteWordsCount}',
+              Icons.favorite,
+              Colors.red,
+            ),
+            const SizedBox(height: 12),
+            _buildStatCard(
+              'Jami so\'zlar',
+              '${wordProvider.totalWordsCount}',
+              Icons.library_books,
+              AppColors.primary,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Settings buttons
+            _buildSettingItem(
+              'Ma\'lumotlarni yangilash',
+              Icons.refresh,
+                  () {
+                final categoryProvider = context.read<CategoryProvider>();
+                final wordProvider = context.read<WordProvider>();
+                final messenger = ScaffoldMessenger.of(context);
+                categoryProvider.refresh();
+                wordProvider.refresh();
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('Ma\'lumotlar yangilandi')),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withAlpha(26),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withAlpha(77),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withAlpha(51),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingItem(String title, IconData icon, VoidCallback onTap) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon, color: AppColors.primary),
+        title: Text(title),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: onTap,
+      ),
     );
   }
 
@@ -288,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(26),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

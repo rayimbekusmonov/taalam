@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/word_provider.dart';
-import '../../models/category_model.dart';
 import '../category/category_screen.dart';
+import '../../core/widgets/category_card.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Ma'lumotlarni yuklash
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CategoryProvider>().loadCategories();
       context.read<WordProvider>().loadAllWords();
@@ -35,7 +35,6 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // Search funksiyasi (keyinroq)
             },
           ),
           IconButton(
@@ -112,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header qismi
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: const BoxDecoration(
@@ -140,7 +138,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Progress card
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -179,7 +176,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
 
-                      // Progress bar
                       const SizedBox(height: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,7 +220,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 20),
 
-                // Kategoriyalar
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -246,7 +241,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 16),
 
-                // Kategoriyalar grid
                 categories.isEmpty
                     ? const Center(
                   child: Padding(
@@ -271,15 +265,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       final color = AppColors.categoryColors[
                       index % AppColors.categoryColors.length];
 
-                      // Kategoriya bo'yicha so'zlar sonini hisoblash
                       final categoryWordsCount = wordProvider.allWords
                           .where((w) => w.categoryId == category.id)
                           .length;
 
-                      return _buildCategoryCard(
+                      return CategoryCard(
                         category: category,
                         wordsCount: categoryWordsCount,
                         color: color,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CategoryScreen(category: category),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -318,80 +319,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryCard({
-    required Category category,
-    required int wordsCount,
-    required Color color,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CategoryScreen(category: category),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: color.withAlpha(26),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: color.withAlpha(77),
-            width: 1,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                category.icon,
-                style: const TextStyle(fontSize: 48),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                category.nameUz,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: color.withAlpha(204),
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                category.nameAr,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withAlpha(51),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '$wordsCount so\'z',
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildFavoritesTab() {
     return Consumer<WordProvider>(

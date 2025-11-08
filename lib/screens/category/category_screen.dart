@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/category_model.dart';
-import '../../models/word_model.dart';
 import '../../providers/word_provider.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/widgets/arabic_text.dart';
+import '../../core/widgets/word_card.dart';
 import '../word_detail/word_detail_screen.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -23,7 +23,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   void initState() {
     super.initState();
-    // Kategoriya so'zlarini yuklash
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<WordProvider>().loadWordsByCategory(widget.category.id);
     });
@@ -36,13 +35,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
         slivers: [
           // App Bar
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: 220,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 widget.category.nameUz,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontSize: 18,
                   shadows: [
                     Shadow(
                       offset: Offset(0, 1),
@@ -61,16 +61,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 40),
+
+                      // Emoji
                       Text(
                         widget.category.icon,
-                        style: const TextStyle(fontSize: 80),
+                        style: const TextStyle(fontSize: 70),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
+
+                      const SizedBox(height: 12),
+
+                      // Arab nomi
+                      ArabicTextMedium(
                         widget.category.nameAr,
-                        style: AppTheme.arabicMedium.copyWith(
-                          color: Colors.white,
-                        ),
+                        color: Colors.white,
                       ),
                     ],
                   ),
@@ -122,7 +125,23 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   delegate: SliverChildBuilderDelegate(
                         (context, index) {
                       final word = words[index];
-                      return _buildWordCard(word, wordProvider);
+                      return WordCard(
+                        word: word,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => WordDetailScreen(word: word),
+                            ),
+                          );
+                        },
+                        onFavorite: () {
+                          wordProvider.toggleFavorite(word.id);
+                        },
+                        onLearned: () {
+                          wordProvider.toggleLearned(word.id);
+                        },
+                      );
                     },
                     childCount: words.length,
                   ),
@@ -131,113 +150,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
             },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildWordCard(Word word, WordProvider wordProvider) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WordDetailScreen(word: word),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Emoji/Icon
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(26),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    word.emoji ?? '📝',
-                    style: const TextStyle(fontSize: 32),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 16),
-
-              // So'z ma'lumotlari
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Arabic text
-                    Text(
-                      word.arabic,
-                      style: AppTheme.arabicMedium.copyWith(
-                        fontSize: 24,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Transliteration
-                    Text(
-                      word.transliteration,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Meaning
-                    Text(
-                      word.uzbek,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Actions
-              Column(
-                children: [
-                  // Favorite button
-                  IconButton(
-                    icon: Icon(
-                      word.isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: word.isFavorite ? Colors.red : Colors.grey,
-                    ),
-                    onPressed: () {
-                      wordProvider.toggleFavorite(word.id);
-                    },
-                  ),
-
-                  // Learned button
-                  IconButton(
-                    icon: Icon(
-                      word.isLearned ? Icons.check_circle : Icons.circle_outlined,
-                      color: word.isLearned ? AppColors.success : Colors.grey,
-                    ),
-                    onPressed: () {
-                      wordProvider.toggleLearned(word.id);
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

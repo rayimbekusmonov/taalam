@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import '../../models/word_model.dart';
 import '../../providers/word_provider.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/widgets/arabic_text.dart';
+import '../../widgets/audio_player_widget.dart';
 
 class WordDetailScreen extends StatelessWidget {
   final Word word;
@@ -59,12 +60,12 @@ class WordDetailScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // Arabic text
-                      Text(
-                        word.arabic,
-                        style: AppTheme.arabicLarge.copyWith(
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: ArabicTextLarge(
+                          word.arabic,
                           color: Colors.white,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
@@ -106,22 +107,22 @@ class WordDetailScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Uzbek meaning
-                  // _buildInfoCard(
-                  //   'O\'zbekcha',
-                  //   word.meaningUz,
-                  //   Icons.translate,
-                  //   AppColors.primary,
-                  // ),
+                  _buildInfoCard(
+                    'O\'zbekcha',
+                    word.uzbek,
+                    Icons.translate,
+                    AppColors.primary,
+                  ),
 
                   const SizedBox(height: 16),
 
                   // English meaning
-                  // _buildInfoCard(
-                  //   'English',
-                  //   word.meaningEn,
-                  //   Icons.language,
-                  //   AppColors.info,
-                  // ),
+                  _buildInfoCard(
+                    'English',
+                    word.english,
+                    Icons.language,
+                    AppColors.info,
+                  ),
 
                   const SizedBox(height: 16),
 
@@ -130,8 +131,12 @@ class WordDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Audio Player (placeholder)
-                  _buildAudioPlayer(context),
+                  // Audio Player
+                  AudioPlayerWidget(
+                    arabicText: word.arabic,
+                    wordId: word.id,
+                    audioUrl: word.audioUrl,
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -249,59 +254,6 @@ class WordDetailScreen extends StatelessWidget {
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: difficultyColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAudioPlayer(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.volume_up,
-            color: Colors.white,
-            size: 48,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Talaffuzni eshitish',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              // Audio player funksiyasi (keyinroq qo'shamiz)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Audio player tez orada qo\'shiladi'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.play_arrow),
-                SizedBox(width: 8),
-                Text('Eshitish'),
-              ],
             ),
           ),
         ],

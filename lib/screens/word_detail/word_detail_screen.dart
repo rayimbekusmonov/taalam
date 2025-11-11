@@ -89,7 +89,6 @@ class WordDetailScreen extends StatelessWidget {
             ],
           ),
 
-          // Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),

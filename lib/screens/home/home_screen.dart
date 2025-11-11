@@ -4,8 +4,8 @@ import '../../core/constants/app_colors.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/word_provider.dart';
 import '../category/category_screen.dart';
+import '../../widgets/progress_card.dart';
 import '../../core/widgets/category_card.dart';
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,15 +35,16 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
+              // Search funksiyasi keyinroq
             },
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () {
+            onPressed: () async {
               final categoryProvider = context.read<CategoryProvider>();
               final wordProvider = context.read<WordProvider>();
               categoryProvider.refresh();
-              wordProvider.refresh();
+              await wordProvider.refresh();
             },
           ),
         ],
@@ -95,131 +96,28 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final categories = categoryProvider.categories;
-        final totalWords = wordProvider.totalWordsCount;
-        final learnedWords = wordProvider.learnedWordsCount;
-        final favoriteWords = wordProvider.favoriteWordsCount;
 
         return RefreshIndicator(
           onRefresh: () async {
-            final categoryProvider = context.read<CategoryProvider>();
-            final wordProvider = context.read<WordProvider>();
-            categoryProvider.refresh();
-            wordProvider.refresh();
+            context.read<CategoryProvider>().refresh();
+            await context.read<WordProvider>().refresh();
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(30),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Assalomu alaykum! 👋',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Bugun qaysi so\'zlarni o\'rganamiz?',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withAlpha(230),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(51),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildStatItem(
-                              '$learnedWords',
-                              'O\'rganilgan',
-                              Icons.check_circle_outline,
-                            ),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: Colors.white.withAlpha(77),
-                            ),
-                            _buildStatItem(
-                              '$totalWords',
-                              'Jami so\'zlar',
-                              Icons.library_books,
-                            ),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: Colors.white.withAlpha(77),
-                            ),
-                            _buildStatItem(
-                              '$favoriteWords',
-                              'Sevimli',
-                              Icons.favorite,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'O\'rganish jarayoni',
-                                style: TextStyle(
-                                  color: Colors.white.withAlpha(230),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Text(
-                                '${wordProvider.learningProgress.toStringAsFixed(0)}%',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: wordProvider.learningProgress / 100,
-                              minHeight: 8,
-                              backgroundColor: Colors.white.withAlpha(77),
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                AppColors.secondary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                // Progress Card
+                ProgressCard(
+                  learnedWords: wordProvider.learnedWordsCount,
+                  totalWords: wordProvider.totalWordsCount,
+                  favoriteWords: wordProvider.favoriteWordsCount,
+                  progress: wordProvider.learningProgress,
                 ),
 
                 const SizedBox(height: 20),
 
+                // Kategoriyalar sarlavhasi
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -241,6 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 16),
 
+                // Kategoriyalar grid
                 categories.isEmpty
                     ? const Center(
                   child: Padding(
@@ -277,7 +176,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CategoryScreen(category: category),
+                              builder: (context) =>
+                                  CategoryScreen(category: category),
                             ),
                           );
                         },
@@ -294,31 +194,6 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-
-  Widget _buildStatItem(String value, String label, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withAlpha(230),
-            fontSize: 11,
-          ),
-        ),
-      ],
-    );
-  }
-
 
   Widget _buildFavoritesTab() {
     return Consumer<WordProvider>(
@@ -453,93 +328,84 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 24),
 
-            // Statistika
-            _buildStatCard(
-              'O\'rganilgan so\'zlar',
-              '${wordProvider.learnedWordsCount}',
-              Icons.check_circle,
-              AppColors.success,
-            ),
-            const SizedBox(height: 12),
-            _buildStatCard(
-              'Sevimli so\'zlar',
-              '${wordProvider.favoriteWordsCount}',
-              Icons.favorite,
-              Colors.red,
-            ),
-            const SizedBox(height: 12),
-            _buildStatCard(
-              'Jami so\'zlar',
-              '${wordProvider.totalWordsCount}',
-              Icons.library_books,
-              AppColors.primary,
+            // Detailed Statistics
+            DetailedStatsCard(
+              stats: {
+                'learned': wordProvider.learnedWordsCount,
+                'favorites': wordProvider.favoriteWordsCount,
+                'total': wordProvider.totalWordsCount,
+              },
             ),
 
             const SizedBox(height: 24),
 
-            // Settings buttons
+            // Settings section
+            Text(
+              'Sozlamalar',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 12),
+
             _buildSettingItem(
               'Ma\'lumotlarni yangilash',
               Icons.refresh,
-                  () {
+                  () async {
                 final categoryProvider = context.read<CategoryProvider>();
                 final wordProvider = context.read<WordProvider>();
                 final messenger = ScaffoldMessenger.of(context);
+
                 categoryProvider.refresh();
-                wordProvider.refresh();
+                await wordProvider.refresh();
+
                 messenger.showSnackBar(
                   const SnackBar(content: Text('Ma\'lumotlar yangilandi')),
                 );
               },
             ),
+
+            _buildSettingItem(
+              'Progressni tozalash',
+              Icons.delete_outline,
+                  () async {
+                // Tasdiqlash dialogi
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Progressni tozalash'),
+                    content: const Text(
+                      'Barcha o\'rganilgan va sevimli so\'zlar tozalanadi. Davom etasizmi?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Yo\'q'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.error,
+                        ),
+                        child: const Text('Ha, tozalash'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true && context.mounted) {
+                  final wordProvider = context.read<WordProvider>();
+                  final messenger = ScaffoldMessenger.of(context);
+
+                  await wordProvider.resetProgress();
+
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text('Progress tozalandi')),
+                  );
+                }
+              },
+            ),
           ],
         );
       },
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withAlpha(26),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withAlpha(77),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withAlpha(51),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 

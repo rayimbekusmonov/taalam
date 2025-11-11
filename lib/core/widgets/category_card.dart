@@ -38,10 +38,10 @@ class CategoryCard extends StatelessWidget {
               // Emoji
               Text(
                 category.icon,
-                style: const TextStyle(fontSize: 48),
+                style: const TextStyle(fontSize: 42),
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // O'zbek nomi
               Text(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/word_model.dart';
 
 class FirestoreService {
@@ -13,10 +14,12 @@ class FirestoreService {
         arabic: doc.data()['arabic'] ?? '',
         transliteration: doc.data()['transliteration'] ?? '',
         uzbek: doc.data()['uzbek'] ?? '',
-        audioUrl: doc.data()['audioUrl'] ?? '',
+        audioUrl: doc.data()['audioUrl'] ?? '', english: '', lastUpdated: DateTime.now(),
       )).toList();
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
       return [];
     }
   }
@@ -30,10 +33,12 @@ class FirestoreService {
         arabic: doc.data()['arabic'] ?? '',
         transliteration: doc.data()['transliteration'] ?? '',
         uzbek: doc.data()['uzbek'] ?? '',
-        audioUrl: doc.data()['audioUrl'] ?? '',
+        audioUrl: doc.data()['audioUrl'] ?? '', english: '', lastUpdated: DateTime.now(),
       )).toList();
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
       return [];
     }
   }

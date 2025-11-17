@@ -63,9 +63,8 @@ class CategoryCard extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-              // So'zlar soni
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(

@@ -5,6 +5,8 @@ import '../../providers/category_provider.dart';
 import '../../providers/word_provider.dart';
 import '../category/category_screen.dart';
 import '../../core/widgets/category_card.dart';
+import '../quiz/quiz_menu_screen.dart';
+import '../search/search_screen.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -30,11 +32,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ArabLug\'at'),
+        title: const Text('Taalam'),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SearchScreen(),
+                ),
+              );
             },
           ),
           IconButton(
@@ -255,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 1.1,
+                      childAspectRatio: 0.85,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                     ),
@@ -390,28 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuizTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.quiz_outlined,
-            size: 80,
-            color: AppColors.primary.withAlpha(128),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Test bo\'limi',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tez orada qo\'shiladi',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
+    return const QuizMenuScreen();
   }
 
   Widget _buildProfileTab() {

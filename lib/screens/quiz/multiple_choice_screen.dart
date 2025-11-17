@@ -160,9 +160,19 @@ class _MultipleChoiceScreenState extends State<MultipleChoiceScreen> {
                     ),
                     child: Column(
                       children: [
-                        Text(
-                          currentQuestion.word.emoji ?? '📝',
-                          style: const TextStyle(fontSize: 60),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(51),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Center(
+                            child: Text(
+                              currentQuestion.word.emoji ?? '📝',
+                              style: const TextStyle(fontSize: 60),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 20),
                         ArabicTextLarge(
@@ -195,7 +205,6 @@ class _MultipleChoiceScreenState extends State<MultipleChoiceScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Options
                   Expanded(
                     child: ListView.builder(
                       itemCount: currentQuestion.options.length,
